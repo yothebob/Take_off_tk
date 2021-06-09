@@ -123,12 +123,6 @@ def make_xlsm(part_names,part_list):
     wb.save(filename=excel_name + '.xlsx')
     print('Excel Sheet Made!!')
 
-    
-
-
-
-
-
 
 def total_parts_sc(_array):
     
@@ -177,7 +171,7 @@ def total_parts_sc(_array):
     stair_bp = 0
     p421 = 0
     p422 = 0
-      
+    #----- mounting ------ 
     if _array[0] == 0: #baseplate
         nccw = total_post * 4
         lags = nccw
@@ -200,7 +194,7 @@ def total_parts_sc(_array):
         halfen = total_post - corner_post
         corner_halfen = corner_post
         l_bracket = total_post * 2
-#---------------------------------------------------------     
+    #-----------infill type/ top rail type------------     
     if _array[3] == 0:#Picket
         picket = job_lf*3
             
@@ -255,8 +249,7 @@ def total_parts_sc(_array):
             rcb1 += ((total_post - end_post) * 2) + (end_post)
             rcb_screw += (((total_post - end_post) * 2) + (end_post)) *2
             sds_screw += ((total_post - end_post)*4) + (end_post *2)
-
-            
+ 
     elif _array[3] == 2:#cable
         spacing = 3
         sds_screw += post * 4
@@ -298,13 +291,13 @@ def find_des_stat():
             res_array[0]=2
         elif item == 'Foam blockout':
             res_array[0]=3
-
+            
         elif item == 'BR200':
             res_array[1]=0
         elif item == 'BR100':
             res_array[1]=1
 
-
+            
         if item == 'TR200':
             res_array[2]=0
         elif item =='TR375':
@@ -313,8 +306,7 @@ def find_des_stat():
             res_array[2]=2
         elif item == 'TR670':
             res_array[2]=3
-
-
+            
         elif item == 'Picket':
             res_array[3]=0
         elif item == 'Cable':
@@ -378,13 +370,13 @@ def total_parts_stats():
     _array= find_des_stat()
     
     if _array[3] == 0:#picket
-        total_post = round(889.3+(-.335-889.3)/(1+(job_lf/1656.11)))#round(job_lf /3.1)
+        total_post = round(889.3+(-.335-889.3)/(1+(job_lf/1656.11)))
     elif _array[3] == 2: #cable
         total_post = round(job_lf/2.4)
     elif _array[3] == 1: # glass
         total_post = round(job_lf/3.1)
 
-    end_post = round(121.3 + (-.3 - 121.3)/(1+(job_lf/344.14)))#round(((.07625*job_lf)+.5)/2)*2
+    end_post = round(121.3 + (-.3 - 121.3)/(1+(job_lf/344.14)))
     corner_post =round((.0167*job_lf)+1.5)
     line_post = total_post - end_post - corner_post
 
