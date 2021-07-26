@@ -1,0 +1,5 @@
+- fix problems of glass/ corehole/ 
+- disern between inside and outside corner posts. x vs o?
+- give a exact parts and not broad names
+- make it so you do not have to repeat the same line multiple times. maybe ()*num?
+- add more options
