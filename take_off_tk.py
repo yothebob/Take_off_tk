@@ -14,29 +14,31 @@ trial and the total LF works based off statistics of previous estimates.
 
 
 """
-
+#18-37 Enums for selecting TR,BR,Mount,infill
 class TopRail:
-    #Enum top rails
+    TOPRAIL = "Toprail"
     TR200 = "TR200"
     TR375 = "TR375"
     TR400 = "TR400"
     TR670 = "TR670"
 
 class BottomRail:
+    BOTTOMRAIL = "Bottomrail"
     BR200 = "BR200"
     BR100 = "BR100"
 
 class Mount:
+    MOUNT = "Mount"
     BP = "BP"
     FASCIA = "Fasica"
     HALFENS = "Halfen"
     COREHOLE = "Corehole"
 
 class Infill:
+    INFILL = "Infill"
     PICKET = "Picket"
     CABLE = "Cable"
     GLASS = "Glass"
-
 
 def total_posts(_spacing):
     #return total number of posts and post types per spacing, only works with input_lengths
@@ -77,7 +79,6 @@ def return_spl200():
             if float(item) > 20:
                 spl200 += math.floor(float(item)/20)
     return spl200;
-
 
 
 def total_tr(_tr_len=20):
@@ -170,16 +171,18 @@ def total_parts_sections():
                   'spacer 200','rcb1','rcb2','rcb screws','pc','gvs bot','gvs top','spl200','int90','int135',
                   'end plate','EP screw','SDS bag','NC/CW','lags',' Kwikset grout']
 
-    _array = find_des()
+    selected_parts_dict = find_part_selections()
 
     job_lf = total_lf()
     tr = total_tr()
     br = tr
-    if _array[3] == 0:#picket
+
+    #get post count and post spacing
+    if selected_parts_dict[Infill.INFILL] == Infill.PICKET:#picket
         total_post,end_post,corner_post,line_post = total_posts(5)
-    elif _array[3] == 1:#glass
+    elif selected_parts_dict[Infill.INFILL] == Infill.GLASS:#glass
         total_post,end_post,corner_post,line_post = total_posts(4)
-    elif _array[3] == 2:#cable
+    elif selected_parts_dict[Infill.INFILL] == Infill.CABLE:#cable
         total_post,end_post,corner_post,line_post = total_posts(3)
 
     int90=0
@@ -216,33 +219,34 @@ def total_parts_sections():
     p421 = 0
     p422 = 0
     #----- mounting ------
-    if _array[0] == 0: #baseplate
+    if selected_parts_dict[Mount.MOUNT] == Mount.BP: #baseplate
         nccw = total_post * 4
         lags = nccw
-        if _array[1] == 1:#tr375
+        if selected_parts_dict[TopRail.TOPRAIL] == TopRail.TR375:#tr375
             p421 = total_post
         else:
             p422 = total_post
 
-    elif _array[0] == 1: # fascia
+    elif selected_parts_dict[Mount.MOUNT] == Mount.FASCIA: # fascia
         fmpbs1 = total_post - corner_post
         fmpbs2 = corner_post
         peu = math.ceil(total_post/4)
         nccw = total_post * 4
         lags = nccw
 
-    elif _array[0] == 2: # Halfen
+    elif selected_parts_dict[Mount.MOUNT] == Mount.HALFEN: # Halfen
         halfen = total_post - corner_post
         corner_halfen = corner_post
         l_bracket = total_post * 2
     else:
         peu = total_post/4
         grout = math.ceil(total_post / 12)
+        
     #-----------infill type/ top rail type------------
-    if _array[3] == 0:#Picket
+    if selected_parts_dict[Infill.INFILL] == Infill.PICKET:#Picket
         picket = job_lf*3
 
-        if _array[1] == 1:#TR375
+        if selected_parts_dict[TopRail.TOPRAIL] == TopRail.TR375:#TR375
             rcb1 += ((total_post - end_post) * 2) + (end_post)
             rcb_screw += (((total_post - end_post) * 2) + (end_post)) *2
             pc = total_post
@@ -255,7 +259,7 @@ def total_parts_sections():
             spl200 = return_spl200()
             int90 = corner_post
 
-        if _array[2] == 0:#br200
+        if selected_parts_dict[BottomRail.BOTTOMRAIL] == BottomRail.BR200:#br200
             pvi = math.ceil((job_lf)/10)
             rcb2 += ((total_post - end_post) * 2) + (end_post)
             rcb_screw += (((total_post - end_post) * 2) + (end_post)) * 2
@@ -268,10 +272,10 @@ def total_parts_sections():
             spacer100 = picket * 2
             sds_screw += ((total_post - end_post)*4) + (end_post *2)
 
-    elif _array[3] == 1:#glass
+    elif selected_parts_dict[Infill.INFILL] == Infill.GLASS:#glass
         gvs_top = math.ceil(job_lf/10)
 
-        if _array[1] == 1:#tr375
+        if selected_parts_dict[TopRail.TOPRAIL] == TopRail.TR375:#tr375
             rcb1 += ((total_post - end_post) * 2) + (end_post)
             rcb_screw += (((total_post - end_post) * 2) + (end_post)) *2
             pc = total_post
@@ -284,7 +288,7 @@ def total_parts_sections():
             spl200 = return_spl200()
             int90 = corner_post
 
-        if _array[2] ==0:#br200
+        if selected_parts_dict[BottomRail.BOTTOMRAIL] == BottomRail.BR200:#br200
             gvs_bot = gvs_top
             rcb2 += ((total_post - end_post) * 2) + (end_post)
             rcb_screw += (((total_post - end_post) * 2) + (end_post)) *2
@@ -294,11 +298,11 @@ def total_parts_sections():
             rcb_screw += (((total_post - end_post) * 2) + (end_post)) *2
             sds_screw += ((total_post - end_post)*4) + (end_post *2)
 
-    elif _array[3] == 2:#cable
+    elif selected_parts_dict[Infill.INFILL] == Infill.CABLE:#cable
         spacing = 3
         sds_screw += total_post * 4
 
-        if _array[1] == 1:#tr375
+        if selected_parts_dict[TopRail.TOPRAIL] == TopRail.TR375:#tr375
             rcb = total_post * 4
             pc = total_post
             spe1 = tr
@@ -321,66 +325,44 @@ def total_parts_sections():
     make_xlsm(part_names,part_list)
 
 
-def find_des():
-    #grab selected railing perameters and return an array with corrosponding numbers 
-    res_array=[]
-    res_array.append(str_mount.get())
-    res_array.append(str_br.get())
-    res_array.append(str_tr.get())
-    res_array.append(str_infill.get())
+def find_part_selections():
+    #grab selected railing perameters and return an array with corrosponding numbers
+    
+    selected_mount =str_mount.get()
+    selected_br = str_br.get()
+    selected_tr = str_tr.get()
+    selected_infill = str_infill.get()
+    
+    selected_parts_dict = {Mount.MOUNT: selected_mount,BottomRail.BOTTOMRAIL: selected_br, TopRail.TOPRAIL: selected_tr,Infill.INFILL : selected_infill}
 
-    for item in res_array:
-        if item == 'BP':
-            res_array[0]=0
-        elif item == 'Fascia':
-            res_array[0]=1
-        elif item == 'Halfens':
-            res_array[0]=2
-        elif item == 'Foam blockout':
-            res_array[0]=3
+    return selected_parts_dict
 
-        elif item == 'BR200':
-            res_array[1]=0
-        elif item == 'BR100':
-            res_array[1]=1
-
-
-        if item == 'TR200':
-            res_array[2]=0
-        elif item =='TR375':
-            res_array[2]=1
-        elif item == 'TR400':
-            res_array[2]=2
-        elif item == 'TR670':
-            res_array[2]=3
-
-        elif item == 'Picket':
-            res_array[3]=0
-        elif item == 'Cable':
-            res_array[3]=1
-        elif item == 'Glass':
-            res_array[3]=2
-    return res_array
 
 
 def total_parts_stats():
+    """
+    Uses some stats from C:\Users\Owner\Desktop\Estimating Tools\Python estimating tools\G drive Estimate scraping\cleaned data. 
 
+    """
+
+    
     part_names = ['Total LF','TR','BR','Pocket infill','Flat infill','SPE1', 'SPE2','PEU','p421',
                   'p422','fmpbs1','fmpbs2','Halfen','Corner Halfen','L bracket','pt-420','PVI',
                   'spacer 100','spacer 200','rcb1','rcb2','rcb screws','pc','gvs bot','gvs top',
                   'spl200','int90','int135','end plate','EP screw','SDS bag','NC/CW','lags',' Kwikset grout']
 
     job_lf = total_lf()
+    #tr and bottom rail give 15% buffer
     tr = math.ceil((job_lf/20)*1.15)
     br = tr
 
-    _array= find_des()
+    selected_parts_dict = find_part_selections()
 
-    if _array[3] == 0:#picket
+    if selected_parts_dict[Infill.INFILL] == Infill.PICKET:#picket
         total_post = round(889.3+(-.335-889.3)/(1+(job_lf/1656.11)))
-    elif _array[3] == 2: #cable
+    elif selected_parts_dict[Infill.INFILL] == Infill.CABLE: #cable
         total_post = round(job_lf/2.4)
-    elif _array[3] == 1: # glass
+    elif selected_parts_dict[Infill.INFILL] == Infill.GLASS: # glass
         total_post = round(job_lf/3.1)
 
     end_post = round(121.3 + (-.3 - 121.3)/(1+(job_lf/344.14)))
@@ -421,33 +403,34 @@ def total_parts_stats():
     p421 = 0
     p422 = 0
 
-    if _array[0] == 0: #baseplate
+    #------------------------Mounting--------------------------------
+    if selected_parts_dict[Mount.MOUNT] == Mount.BP: #baseplate
         nccw = total_post * 4
         lags = nccw
-        if _array[1] == 1:#tr375
+        if selected_parts_dict[TopRail.TOPRAIL] == TopRail.TR375:#tr375
             p421 = total_post
         else:
             p422 = total_post
 
-    elif _array[0] == 1: # fascia
+    elif selected_parts_dict[Mount.MOUNT] == Mount.FASCIA: # fascia
         fmpbs1 = total_post - corner_post
         fmpbs2 = corner_post
         peu = math.ceil(total_post/4)
         nccw = total_post * 4
         lags = nccw
 
-    elif _array[0] == 3: # corehole
+    elif selected_parts_dict[Mount.MOUNT] == Mount.COREHOLE: # corehole
         peu = total_post/4
         grout = math.ceil(total_post / 12)
     else:
         halfen = total_post - corner_post
         corner_halfen = corner_post
         l_bracket = total_post * 2
-#---------------------------------------------------------
-    if _array[3] == 0:#Picket
+#--------------------------infill / TR type-------------------------------
+    if selected_parts_dict[Infill.INFILL] == Infill.PICKET:#Picket
         picket = job_lf*3
 
-        if _array[1] == 1:#TR375
+        if selected_parts_dict[TopRail.TR375] == TopRail.TR375:#TR375
             rcb1 += ((total_post - end_post) * 2) + (end_post)
             rcb_screw += (((total_post - end_post) * 2) + (end_post)) *2
             pc = total_post
@@ -460,7 +443,7 @@ def total_parts_stats():
             spl200 = 0#return_spl200()
             int90 = corner_post
 
-        if _array[2] == 0:#br200
+        if selected_parts_dict[BottomRail.BOTTOMRAIL] == BottomRail.BR200:#br200
             pvi = math.ceil((job_lf)/10)
             rcb2 += ((total_post - end_post) * 2) + (end_post)
             rcb_screw += (((total_post - end_post) * 2) + (end_post)) * 2
@@ -473,10 +456,10 @@ def total_parts_stats():
             spacer100 = picket * 2
             sds_screw += ((total_post - end_post)*4) + (end_post *2)
 
-    elif _array[3] == 1:#glass
+    elif selected_parts_dict[Infill.INFILL] == Infill.GLASS:#glass
         gvs_top = math.ceil(job_lf/10)
 
-        if _array[1] == 1:#tr375
+        if selected_parts_dict[TopRail.TOPRAIL] == TopRail.TR375:#tr375
             rcb1 += ((total_post - end_post) * 2) + (end_post)
             rcb_screw += (((total_post - end_post) * 2) + (end_post)) *2
             pc = total_post
@@ -489,7 +472,7 @@ def total_parts_stats():
             spl200 = 0#return_spl200()
             int90 = corner_post
 
-        if _array[2] ==0:#br200
+        if selected_parts_dict[BottomRail.BOTTOMRAIL] == BottomRail.BR200:#br200
             gvs_bot = gvs_top
             rcb2 += ((total_post - end_post) * 2) + (end_post)
             rcb_screw += (((total_post - end_post) * 2) + (end_post)) *2
@@ -500,11 +483,11 @@ def total_parts_stats():
             sds_screw += ((total_post - end_post)*4) + (end_post *2)
 
 
-    elif _array[3] == 2:#cable
+    elif selected_parts_dict[Infill.INFILL] == Infill.CABLE:#cable
         spacing = 3
         sds_screw += total_post * 4
 
-        if _array[1] == 1:#tr375
+        if selected_parts_dict[TopRail.TOPRAIL] == TopRail.TR375:#tr375
             rcb = total_post * 4
             pc = total_post
             spe1 = tr
@@ -513,7 +496,7 @@ def total_parts_stats():
             ep_screw = end_plate *2
             flat_infill = tr
             rcb = total_post * 2
-            spl200 = return_spl200()
+            spl200 = 0#return_spl200()
             int90 = corner_post
 
         rcb_screw = rcb * 2
